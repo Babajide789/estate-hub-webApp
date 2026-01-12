@@ -40,10 +40,8 @@ export default function PropertiesPage({
             <PropertyCard
               key={property.id}
               property={property}
-              onClick={() =>
-                router.push(`/properties/${property.id}`)
-              }
             />
+
           ))}
         </div>
       ) : (
