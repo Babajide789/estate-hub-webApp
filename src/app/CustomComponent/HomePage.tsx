@@ -6,7 +6,7 @@ import { Search, Home, TrendingUp, Award, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Property } from "../types/property";
 import { PropertyCard } from "./PropertyCard";
-
+import { useAuth } from "@/hooks/useAuth"
 interface HomePageProps {
   featuredProperties: Property[];
 }
@@ -20,6 +20,10 @@ export function HomePage({ featuredProperties }: HomePageProps) {
     { icon: TrendingUp, value: "$2B+", label: "Property Value" },
     { icon: Award, value: "15+", label: "Years Experience" },
   ];
+
+  const { user, loading } = useAuth()
+
+console.log({ user, loading })
 
   return (
     <div>

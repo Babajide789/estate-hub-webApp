@@ -1,20 +1,18 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { Bed, Bath, Square, MapPin, Heart } from "lucide-react";
-import { Property } from "../types/property";
-import { useState } from "react";
-import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { Badge } from "@/components/ui/badge";
+import Link from "next/link"
+import { Card, CardContent } from "@/components/ui/card"
+import { Bed, Bath, Square, MapPin } from "lucide-react"
+import { Property } from "../types/property"
+import { ImageWithFallback } from "./figma/ImageWithFallback"
+import { Badge } from "@/components/ui/badge"
+import { BookmarkButton } from "./BookmarkButton"
 
 interface PropertyCardProps {
-  property: Property;
+  property: Property
 }
 
 export function PropertyCard({ property }: PropertyCardProps) {
-  const [isFavorite, setIsFavorite] = useState(false);
-
   return (
     <Card className="overflow-hidden transition-all hover:shadow-lg group">
       <Link
@@ -32,25 +30,10 @@ export function PropertyCard({ property }: PropertyCardProps) {
             />
           </div>
 
-          {/* FAVORITE BUTTON */}
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              setIsFavorite((prev) => !prev);
-            }}
-            className="absolute top-4 right-4 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors"
-            aria-label="Save property"
-          >
-            <Heart
-              className={`w-5 h-5 ${
-                isFavorite
-                  ? "fill-red-500 text-red-500"
-                  : "text-gray-600"
-              }`}
-            />
-          </button>
+          {/* BOOKMARK BUTTON */}
+          <BookmarkButton propertyId={property.id} />
 
+          {/* STATUS BADGE */}
           <Badge className="absolute top-4 left-4 bg-blue-600">
             {property.status}
           </Badge>
@@ -59,7 +42,9 @@ export function PropertyCard({ property }: PropertyCardProps) {
         {/* CONTENT */}
         <CardContent className="p-6">
           <div className="flex justify-between items-start mb-3">
-            <h3 className="text-xl font-semibold">{property.title}</h3>
+            <h3 className="text-xl font-semibold">
+              {property.title}
+            </h3>
             <p className="text-xl text-blue-600">
               ${property.price.toLocaleString()}
             </p>
@@ -73,12 +58,18 @@ export function PropertyCard({ property }: PropertyCardProps) {
           <div className="flex items-center gap-4 text-gray-700">
             <div className="flex items-center">
               <Bed className="w-4 h-4 mr-1" />
-              <span className="text-sm">{property.bedrooms} beds</span>
+              <span className="text-sm">
+                {property.bedrooms} beds
+              </span>
             </div>
+
             <div className="flex items-center">
               <Bath className="w-4 h-4 mr-1" />
-              <span className="text-sm">{property.bathrooms} baths</span>
+              <span className="text-sm">
+                {property.bathrooms} baths
+              </span>
             </div>
+
             <div className="flex items-center">
               <Square className="w-4 h-4 mr-1" />
               <span className="text-sm">
@@ -89,5 +80,5 @@ export function PropertyCard({ property }: PropertyCardProps) {
         </CardContent>
       </Link>
     </Card>
-  );
+  )
 }
