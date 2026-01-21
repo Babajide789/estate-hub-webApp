@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react";
-import { properties } from "../data/properties";
+import { properties } from "../../___mocks___/properties";
 import { PropertyFilters } from "../types/filters";
 import PropertiesPage from "../CustomComponent/PropertiesPage";
 

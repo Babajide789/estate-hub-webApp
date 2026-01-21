@@ -31,7 +31,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
           </div>
 
           {/* BOOKMARK BUTTON */}
-          <BookmarkButton propertyId={property.id} />
+          {/* <BookmarkButton propertyId={property.id} /> */}
 
           {/* STATUS BADGE */}
           <Badge className="absolute top-4 left-4 bg-blue-600">

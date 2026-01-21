@@ -21,9 +21,7 @@ export function HomePage({ featuredProperties }: HomePageProps) {
     { icon: Award, value: "15+", label: "Years Experience" },
   ];
 
-  const { user, loading } = useAuth()
-
-console.log({ user, loading })
+  
 
   return (
     <div>

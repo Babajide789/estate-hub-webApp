@@ -2,89 +2,92 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-
 import { useAuth } from "@/hooks/useAuth"
-import { signOut } from "@/lib/supabase/auth"
 import { getUserBookmarks } from "@/lib/supabase/bookmarks"
+import { Button } from "@/components/ui/button"
+import { signOut } from "@/lib/supabase/auth"
+import { Property } from "../types/property"
+import { PropertyCard } from "../CustomComponent/PropertyCard"
 
 export default function ProfilePage() {
   const { user, loading } = useAuth()
   const router = useRouter()
 
-  const [bookmarks, setBookmarks] = useState<any[]>([])
-  const [bookmarksLoading, setBookmarksLoading] = useState(true)
+  const [savedProperties, setSavedProperties] = useState<Property[]>([])
+  const [fetching, setFetching] = useState(true)
 
-  // Redirect if not authenticated
+  // 🔐 Protect route
   useEffect(() => {
     if (!loading && !user) {
       router.push("/signin")
     }
   }, [user, loading, router])
 
-  // Fetch bookmarks once user is available
+  // 📦 Fetch saved properties
   useEffect(() => {
-    if (!user) return
-
-    async function fetchBookmarks() {
+    async function loadBookmarks() {
       try {
         const data = await getUserBookmarks()
-        setBookmarks(data ?? [])
-      } catch (error) {
-        console.error("Failed to load bookmarks:", error)
+        setSavedProperties(data || [])
+      } catch (err) {
+        console.error("Failed to load bookmarks", err)
       } finally {
-        setBookmarksLoading(false)
+        setFetching(false)
       }
     }
 
-    fetchBookmarks()
+    if (user) loadBookmarks()
   }, [user])
 
-  if (loading) return <p className="p-8">Loading profile...</p>
+  if (loading || fetching) {
+    return (
+      <div className="container py-12">
+        <p>Loading profile...</p>
+      </div>
+    )
+  }
 
   return (
-    <div className="container py-12">
-      <h1 className="text-2xl font-semibold mb-4">My Profile</h1>
+    <div className="container mx-auto px-4 py-12">
+      {/* PROFILE HEADER */}
+      <div className="flex justify-between items-center mb-10">
+        <div>
+          <h1 className="text-3xl font-semibold mb-1">My Profile</h1>
+          <p className="text-gray-600">{user?.email}</p>
+        </div>
 
-      <p className="mb-6">Email: {user?.email}</p>
+        <Button
+          variant="outline"
+          onClick={async () => {
+            await signOut()
+            router.push("/signin")
+          }}
+        >
+          Sign Out
+        </Button>
+      </div>
 
       {/* SAVED PROPERTIES */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">
+      <section id="bookmarks">
+        <h2 className="text-2xl font-semibold mb-6">
           Saved Properties
         </h2>
 
-        {bookmarksLoading && (
-          <p className="text-gray-500">Loading saved properties…</p>
-        )}
-
-        {!bookmarksLoading && bookmarks.length === 0 && (
+        {savedProperties.length === 0 ? (
           <p className="text-gray-500">
-            No saved properties yet.
+            You haven’t saved any properties yet.
           </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {savedProperties.map((property) => (
+              <PropertyCard
+                key={property.id}
+                property={property}
+              />
+            ))}
+          </div>
         )}
-
-        <ul className="space-y-3">
-          {bookmarks.map((item) => (
-            <li
-              key={item.id}
-              className="border p-3 rounded"
-            >
-              Property ID: {item.property_id}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <Button
-        className="mt-8"
-        onClick={async () => {
-          await signOut()
-          router.push("/signin")
-        }}
-      >
-        Sign Out
-      </Button>
+      </section>
     </div>
   )
 }

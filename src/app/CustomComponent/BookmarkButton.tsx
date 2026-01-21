@@ -3,7 +3,10 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Bookmark } from "lucide-react"
-import { addBookmark, removeBookmark } from "@/lib/supabase/bookmarks"
+
+/** 🔴 CHANGED: import toggleBookmark instead of add/remove */
+import { toggleBookmark } from "@/lib/supabase/bookmarks"
+
 import { useAuth } from "@/hooks/useAuth"
 
 export function BookmarkButton({ propertyId }: { propertyId: string }) {
@@ -13,7 +16,8 @@ export function BookmarkButton({ propertyId }: { propertyId: string }) {
   const [saved, setSaved] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  async function toggleBookmark() {
+  /** 🔴 CHANGED: renamed function to avoid name clash */
+  async function handleToggleBookmark() {
     if (!user) {
       router.push("/signin")
       return
@@ -22,13 +26,11 @@ export function BookmarkButton({ propertyId }: { propertyId: string }) {
     setLoading(true)
 
     try {
-      if (saved) {
-        await removeBookmark(propertyId)
-        setSaved(false)
-      } else {
-        await addBookmark(propertyId)
-        setSaved(true)
-      }
+      /** 🔴 CHANGED: single toggle call */
+      const result = await toggleBookmark(propertyId)
+
+      /** 🔴 CHANGED: set state from returned value */
+      setSaved(result.bookmarked)
     } catch (err: any) {
       if (err.message === "NOT_AUTHENTICATED") {
         router.push("/signin")
@@ -45,7 +47,9 @@ export function BookmarkButton({ propertyId }: { propertyId: string }) {
       onClick={(e) => {
         e.preventDefault()
         e.stopPropagation()
-        toggleBookmark()
+
+        /** 🔴 CHANGED: call new handler */
+        handleToggleBookmark()
       }}
       disabled={loading}
       className="absolute top-4 right-4 p-2 bg-white/90 rounded-full"

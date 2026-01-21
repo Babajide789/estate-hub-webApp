@@ -1,29 +1,45 @@
-"use client";
+"use client"
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Home, Menu, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
+import {
+  Home,
+  Menu,
+  X,
+  User,
+  Bookmark,
+  LogOut,
+  LogIn,
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
 import {
   Sheet,
   SheetContent,
   SheetTrigger,
   SheetHeader,
   SheetTitle,
-} from "@/components/ui/sheet";
-import { useState } from "react";
+} from "@/components/ui/sheet"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useState } from "react"
+import { useAuth } from "@/hooks/useAuth"
+import { signOut } from "@/lib/supabase/auth"
 
 const navItems = [
   { href: "/", label: "Home" },
   { href: "/properties", label: "Properties" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
-];
+]
 
 interface NavItemsProps {
-  pathname: string;
-  mobile?: boolean;
-  onNavigate?: () => void;
+  pathname: string
+  mobile?: boolean
+  onNavigate?: () => void
 }
 
 function NavItems({ pathname, mobile = false, onNavigate }: NavItemsProps) {
@@ -36,7 +52,7 @@ function NavItems({ pathname, mobile = false, onNavigate }: NavItemsProps) {
       }
     >
       {navItems.map((item) => {
-        const isActive = pathname === item.href;
+        const isActive = pathname === item.href
 
         return (
           <Link
@@ -51,23 +67,19 @@ function NavItems({ pathname, mobile = false, onNavigate }: NavItemsProps) {
           >
             {item.label}
           </Link>
-        );
+        )
       })}
-
-      <Link href="/contact" onClick={onNavigate}>
-        <Button className={mobile ? "w-full" : ""}>
-          List Property
-        </Button>
-      </Link>
     </div>
-  );
+  )
 }
 
 export function Header() {
-  const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname()
+  const router = useRouter()
+  const { user } = useAuth()
+  const [isOpen, setIsOpen] = useState(false)
 
-  const closeMobileMenu = () => setIsOpen(false);
+  const closeMobileMenu = () => setIsOpen(false)
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur">
@@ -84,11 +96,59 @@ export function Header() {
         {/* Desktop Nav */}
         <NavItems pathname={pathname} />
 
+        {/* Profile / Auth */}
+        <div className="hidden md:flex items-center gap-4">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <User className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+
+            <DropdownMenuContent align="end" className="w-48">
+              {user ? (
+                <>
+                  <DropdownMenuItem
+                    onClick={() => router.push("/profile")}
+                  >
+                    <User className="w-4 h-4 mr-2" />
+                    Profile
+                  </DropdownMenuItem>
+
+                  {/* <DropdownMenuItem
+                    onClick={() => router.push("/profile#bookmarks")}
+                  >
+                    <Bookmark className="w-4 h-4 mr-2" />
+                    Saved Properties
+                  </DropdownMenuItem> */}
+
+                  <DropdownMenuItem
+                    onClick={async () => {
+                      await signOut()
+                      router.push("/signin")
+                    }}
+                  >
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <DropdownMenuItem
+                  onClick={() => router.push("/signin")}
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  Sign In
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
         {/* Mobile Nav */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild className="md:hidden">
             <Button variant="ghost" size="icon">
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isOpen ? <X /> : <Menu />}
             </Button>
           </SheetTrigger>
 
@@ -102,10 +162,59 @@ export function Header() {
               mobile
               onNavigate={closeMobileMenu}
             />
-          </SheetContent>
 
+            <div className="mt-6 space-y-3">
+              {user ? (
+                <>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      closeMobileMenu()
+                      router.push("/profile")
+                    }}
+                  >
+                    Profile
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      closeMobileMenu()
+                      router.push("/profile#bookmarks")
+                    }}
+                  >
+                    Saved Properties
+                  </Button>
+
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={async () => {
+                      await signOut()
+                      closeMobileMenu()
+                      router.push("/signin")
+                    }}
+                  >
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  className="w-full"
+                  onClick={() => {
+                    closeMobileMenu()
+                    router.push("/signin")
+                  }}
+                >
+                  Sign In
+                </Button>
+              )}
+            </div>
+          </SheetContent>
         </Sheet>
       </div>
     </header>
-  );
+  )
 }

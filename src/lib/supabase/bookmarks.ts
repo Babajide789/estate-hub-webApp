@@ -10,18 +10,22 @@ export async function addBookmark(propertyId: string) {
     throw new Error("NOT_AUTHENTICATED")
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("bookmarks")
     .insert({
       user_id: user.id,
       property_id: propertyId,
     })
+    .select()
 
   if (error) {
-    console.error("Bookmark insert error:", error)
+    console.error("FULL BOOKMARK ERROR:", error)
     throw error
   }
+
+  return data
 }
+
 
 export async function removeBookmark(propertyId: string) {
   const { data: { user } } = await supabase.auth.getUser()
@@ -38,43 +42,88 @@ export async function removeBookmark(propertyId: string) {
 }
 
 export async function getUserBookmarks() {
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  if (!user) return []
+  if (!user) throw new Error("NOT_AUTHENTICATED")
 
   const { data, error } = await supabase
     .from("bookmarks")
-    .select("*")
+    .select(`
+      properties (
+        id,
+        title,
+        price,
+        description,
+        location,
+        image,
+        status
+      )
+    `)
     .eq("user_id", user.id)
 
   if (error) throw error
 
+  // Map out the nested structure
   return data
+    .map(row => row.properties)
+    .filter(Boolean)
 }
+
 
 export async function toggleBookmark(propertyId: string) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (!user) throw new Error("Not authenticated")
+  if (!user) throw new Error("NOT_AUTHENTICATED")
 
+  // Check if exists
   const { data: existing } = await supabase
     .from("bookmarks")
     .select("id")
     .eq("user_id", user.id)
     .eq("property_id", propertyId)
-    .single()
+    .maybeSingle()
 
   if (existing) {
-    return supabase
+    // 🔥 Already bookmarked → remove
+    const { error } = await supabase
       .from("bookmarks")
       .delete()
       .eq("id", existing.id)
-  }
 
-  return supabase.from("bookmarks").insert({
-    user_id: user.id,
-    property_id: propertyId,
-  })
+    if (error) throw error
+
+    return { bookmarked: false }
+  } else {
+    // ➕ Not bookmarked → add
+    const { error } = await supabase.from("bookmarks").insert({
+      user_id: user.id,
+      property_id: propertyId,
+    })
+
+    if (error) throw error
+
+    return { bookmarked: true }
+  }
+}
+
+
+export async function isBookmarked(propertyId: string) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) return false
+
+  const { data } = await supabase
+    .from("bookmarks")
+    .select("id")
+    .eq("user_id", user.id)
+    .eq("property_id", propertyId)
+    .maybeSingle()
+
+  return !!data
 }

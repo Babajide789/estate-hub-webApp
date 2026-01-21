@@ -1,5 +1,5 @@
 import { PropertyDetail } from "@/app/CustomComponent/PropertyDetail";
-import { properties } from "@/app/data/properties";
+import { properties } from "@/___mocks___/properties";
 import { notFound } from "next/navigation";
 
 interface PageProps {
