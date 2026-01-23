@@ -32,11 +32,7 @@ export default function SignUpPage() {
       await signUp({
         email,
         password,
-        options: {
-          data: {
-            full_name: fullName,
-          },
-        },
+        full_name: fullName,
       })
 
       // Supabase may require email confirmation

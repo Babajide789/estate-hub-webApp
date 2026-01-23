@@ -3,16 +3,25 @@ import { supabase } from "./client"
 /**
  * Sign up user
  */
+interface SignUpParams {
+  email: string
+  password: string
+  full_name?: string
+}
+
 export async function signUp({
   email,
   password,
-}: {
-  email: string
-  password: string
-}) {
+  full_name,
+}: SignUpParams) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
+    options: {
+      data: {
+        full_name,
+      },
+    },
   })
 
   if (error) throw error
