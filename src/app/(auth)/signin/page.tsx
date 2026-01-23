@@ -57,6 +57,16 @@ export default function SignInPage() {
         <Button className="w-full" disabled={loading}>
           {loading ? "Signing in..." : "Sign In"}
         </Button>
+
+        <p className="text-sm text-center text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <span
+            onClick={() => router.push("/signup")}
+            className="text-blue-600 cursor-pointer hover:underline"
+          >
+            Sign up
+          </span>
+        </p>
       </form>
     </div>
   )

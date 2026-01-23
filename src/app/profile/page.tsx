@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button"
 import { signOut } from "@/lib/supabase/auth"
 import { Property } from "../types/property"
 import { PropertyCard } from "../CustomComponent/PropertyCard"
+import { LogoutConfirm } from "../CustomComponent/LogoutConfirm"
 
 export default function ProfilePage() {
   const { user, loading } = useAuth()
   const router = useRouter()
 
-  const [savedProperties,] = useState<Property[]>([])
-  const [fetching, ] = useState(true)
+  const [savedProperties, setSavedProperties] = useState<Property[]>([])
+  const [fetching, setFetching] = useState(false)
 
   // 🔐 Protect route
   useEffect(() => {
@@ -25,6 +26,8 @@ export default function ProfilePage() {
 
   // 📦 Fetch saved properties
   // useEffect(() => {
+  //   if (!user) return
+
   //   async function loadBookmarks() {
   //     try {
   //       const data = await getUserBookmarks()
@@ -32,11 +35,11 @@ export default function ProfilePage() {
   //     } catch (err) {
   //       console.error("Failed to load bookmarks", err)
   //     } finally {
-  //       setFetching(false)
+  //       setFetching(false) // ✅ THIS WAS MISSING
   //     }
   //   }
 
-  //   if (user) loadBookmarks()
+  //   loadBookmarks()
   // }, [user])
 
   if (loading || fetching) {
@@ -56,15 +59,13 @@ export default function ProfilePage() {
           <p className="text-gray-600">{user?.email}</p>
         </div>
 
-        <Button
-          variant="outline"
-          onClick={async () => {
-            await signOut()
-            router.push("/signin")
-          }}
-        >
-          Sign Out
-        </Button>
+        <LogoutConfirm
+          trigger={
+            <Button variant="destructive">
+              Sign Out
+            </Button>
+          }
+        />
       </div>
 
       {/* SAVED PROPERTIES */}

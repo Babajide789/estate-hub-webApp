@@ -7,7 +7,6 @@ import {
   Menu,
   X,
   User,
-  Bookmark,
   LogOut,
   LogIn,
 } from "lucide-react"
@@ -28,6 +27,7 @@ import {
 import { useState } from "react"
 import { useAuth } from "@/hooks/useAuth"
 import { signOut } from "@/lib/supabase/auth"
+import { LogoutConfirm } from "./LogoutConfirm"
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -47,25 +47,41 @@ function NavItems({ pathname, mobile = false, onNavigate }: NavItemsProps) {
     <div
       className={
         mobile
-          ? "flex flex-col gap-4"
+          ? "flex flex-col gap-2"
           : "hidden md:flex items-center gap-6"
       }
     >
       {navItems.map((item) => {
-        const isActive = pathname === item.href
+        const isActive =
+          pathname === item.href ||
+          (item.href !== "/" && pathname.startsWith(item.href))
 
         return (
           <Link
             key={item.href}
             href={item.href}
             onClick={onNavigate}
-            className={`${
-              isActive
-                ? "text-blue-600"
-                : "text-gray-700 hover:text-blue-600"
-            } transition-colors ${mobile ? "text-lg" : ""}`}
+            className={`
+              relative transition-all duration-200
+              ${
+                isActive
+                  ? "text-blue-600 font-semibold"
+                  : "text-gray-700 hover:text-blue-600"
+              }
+              ${mobile ? "text-lg px-3 py-2 rounded-md" : ""}
+            `}
           >
             {item.label}
+
+            {/* Desktop underline */}
+            {!mobile && isActive && (
+              <span className="absolute -bottom-1 left-0 h-0.5 w-full bg-blue-600 rounded-full" />
+            )}
+
+            {/* Mobile left indicator */}
+            {mobile && isActive && (
+              <span className="absolute left-0 top-0 h-full w-1 bg-blue-600 rounded-r" />
+            )}
           </Link>
         )
       })}
@@ -73,14 +89,18 @@ function NavItems({ pathname, mobile = false, onNavigate }: NavItemsProps) {
   )
 }
 
+
 export function Header() {
   const pathname = usePathname()
   const router = useRouter()
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
 
   const closeMobileMenu = () => setIsOpen(false)
   const isAuthPage = ["/signin", "/signup", "/forgot-password"].includes(pathname)
+
+  // ✅ Prevent auth flicker (THIS IS THE KEY FIX)
+  if (loading) return null
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur">
@@ -97,7 +117,7 @@ export function Header() {
         {/* Desktop Nav */}
         {!isAuthPage && <NavItems pathname={pathname} />}
 
-        {/* Profile / Auth */}
+        {/* Desktop Profile / Auth */}
         {!isAuthPage && (
           <div className="hidden md:flex items-center gap-4">
             <DropdownMenu>
@@ -115,15 +135,19 @@ export function Header() {
                       Profile
                     </DropdownMenuItem>
 
-                    <DropdownMenuItem
-                      onClick={async () => {
-                        await signOut()
-                        router.push("/signin")
-                      }}
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Sign Out
-                    </DropdownMenuItem>
+
+                    <LogoutConfirm
+                      trigger={
+                        <DropdownMenuItem
+                          onSelect={(e) => e.preventDefault()}
+                          className="text-red-600 focus:text-red-600"
+                        >
+                          <LogOut className="w-4 h-4 mr-2" />
+                          Sign Out
+                        </DropdownMenuItem>
+                      }
+                    />
+
                   </>
                 ) : (
                   <DropdownMenuItem onClick={() => router.push("/signin")}>
@@ -170,28 +194,18 @@ export function Header() {
                       Profile
                     </Button>
 
-                    <Button
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => {
-                        closeMobileMenu()
-                        router.push("/profile#bookmarks")
-                      }}
-                    >
-                      Saved Properties
-                    </Button>
+                    <LogoutConfirm
+                      onAfterLogout={closeMobileMenu}
+                      trigger={
+                        <Button
+                          variant="destructive"
+                          className="w-full"
+                        >
+                          Sign Out
+                        </Button>
+                      }
+                    />
 
-                    <Button
-                      variant="destructive"
-                      className="w-full"
-                      onClick={async () => {
-                        await signOut()
-                        closeMobileMenu()
-                        router.push("/signin")
-                      }}
-                    >
-                      Sign Out
-                    </Button>
                   </>
                 ) : (
                   <Button
@@ -212,4 +226,3 @@ export function Header() {
     </header>
   )
 }
-
