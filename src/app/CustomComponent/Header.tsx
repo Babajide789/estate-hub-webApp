@@ -80,6 +80,7 @@ export function Header() {
   const [isOpen, setIsOpen] = useState(false)
 
   const closeMobileMenu = () => setIsOpen(false)
+  const isAuthPage = ["/signin", "/signup", "/forgot-password"].includes(pathname)
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur">
@@ -94,127 +95,121 @@ export function Header() {
         </Link>
 
         {/* Desktop Nav */}
-        <NavItems pathname={pathname} />
+        {!isAuthPage && <NavItems pathname={pathname} />}
 
         {/* Profile / Auth */}
-        <div className="hidden md:flex items-center gap-4">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <User className="w-5 h-5" />
-              </Button>
-            </DropdownMenuTrigger>
+        {!isAuthPage && (
+          <div className="hidden md:flex items-center gap-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <User className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
 
-            <DropdownMenuContent align="end" className="w-48">
-              {user ? (
-                <>
-                  <DropdownMenuItem
-                    onClick={() => router.push("/profile")}
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Profile
+              <DropdownMenuContent align="end" className="w-48">
+                {user ? (
+                  <>
+                    <DropdownMenuItem onClick={() => router.push("/profile")}>
+                      <User className="w-4 h-4 mr-2" />
+                      Profile
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={async () => {
+                        await signOut()
+                        router.push("/signin")
+                      }}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <DropdownMenuItem onClick={() => router.push("/signin")}>
+                    <LogIn className="w-4 h-4 mr-2" />
+                    Sign In
                   </DropdownMenuItem>
-
-                  {/* <DropdownMenuItem
-                    onClick={() => router.push("/profile#bookmarks")}
-                  >
-                    <Bookmark className="w-4 h-4 mr-2" />
-                    Saved Properties
-                  </DropdownMenuItem> */}
-
-                  <DropdownMenuItem
-                    onClick={async () => {
-                      await signOut()
-                      router.push("/signin")
-                    }}
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    Sign Out
-                  </DropdownMenuItem>
-                </>
-              ) : (
-                <DropdownMenuItem
-                  onClick={() => router.push("/signin")}
-                >
-                  <LogIn className="w-4 h-4 mr-2" />
-                  Sign In
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
 
         {/* Mobile Nav */}
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger asChild className="md:hidden">
-            <Button variant="ghost" size="icon">
-              {isOpen ? <X /> : <Menu />}
-            </Button>
-          </SheetTrigger>
+        {!isAuthPage && (
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild className="md:hidden">
+              <Button variant="ghost" size="icon">
+                {isOpen ? <X /> : <Menu />}
+              </Button>
+            </SheetTrigger>
 
-          <SheetContent>
-            <SheetHeader>
-              <SheetTitle>Menu</SheetTitle>
-            </SheetHeader>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Menu</SheetTitle>
+              </SheetHeader>
 
-            <NavItems
-              pathname={pathname}
-              mobile
-              onNavigate={closeMobileMenu}
-            />
+              <NavItems
+                pathname={pathname}
+                mobile
+                onNavigate={closeMobileMenu}
+              />
 
-            <div className="mt-6 space-y-3">
-              {user ? (
-                <>
+              <div className="mt-6 space-y-3">
+                {user ? (
+                  <>
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        closeMobileMenu()
+                        router.push("/profile")
+                      }}
+                    >
+                      Profile
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => {
+                        closeMobileMenu()
+                        router.push("/profile#bookmarks")
+                      }}
+                    >
+                      Saved Properties
+                    </Button>
+
+                    <Button
+                      variant="destructive"
+                      className="w-full"
+                      onClick={async () => {
+                        await signOut()
+                        closeMobileMenu()
+                        router.push("/signin")
+                      }}
+                    >
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
                   <Button
-                    variant="outline"
                     className="w-full"
                     onClick={() => {
-                      closeMobileMenu()
-                      router.push("/profile")
-                    }}
-                  >
-                    Profile
-                  </Button>
-
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => {
-                      closeMobileMenu()
-                      router.push("/profile#bookmarks")
-                    }}
-                  >
-                    Saved Properties
-                  </Button>
-
-                  <Button
-                    variant="destructive"
-                    className="w-full"
-                    onClick={async () => {
-                      await signOut()
                       closeMobileMenu()
                       router.push("/signin")
                     }}
                   >
-                    Sign Out
+                    Sign In
                   </Button>
-                </>
-              ) : (
-                <Button
-                  className="w-full"
-                  onClick={() => {
-                    closeMobileMenu()
-                    router.push("/signin")
-                  }}
-                >
-                  Sign In
-                </Button>
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
+        )}
       </div>
     </header>
   )
 }
+

@@ -13,8 +13,8 @@ export default function ProfilePage() {
   const { user, loading } = useAuth()
   const router = useRouter()
 
-  const [savedProperties, setSavedProperties] = useState<Property[]>([])
-  const [fetching, setFetching] = useState(true)
+  const [savedProperties,] = useState<Property[]>([])
+  const [fetching, ] = useState(true)
 
   // 🔐 Protect route
   useEffect(() => {
@@ -24,20 +24,20 @@ export default function ProfilePage() {
   }, [user, loading, router])
 
   // 📦 Fetch saved properties
-  useEffect(() => {
-    async function loadBookmarks() {
-      try {
-        const data = await getUserBookmarks()
-        setSavedProperties(data || [])
-      } catch (err) {
-        console.error("Failed to load bookmarks", err)
-      } finally {
-        setFetching(false)
-      }
-    }
+  // useEffect(() => {
+  //   async function loadBookmarks() {
+  //     try {
+  //       const data = await getUserBookmarks()
+  //       setSavedProperties(data || [])
+  //     } catch (err) {
+  //       console.error("Failed to load bookmarks", err)
+  //     } finally {
+  //       setFetching(false)
+  //     }
+  //   }
 
-    if (user) loadBookmarks()
-  }, [user])
+  //   if (user) loadBookmarks()
+  // }, [user])
 
   if (loading || fetching) {
     return (
